@@ -37,12 +37,14 @@ def retrieve_results(file_path):
   precision = test_metrics.group(1).strip().split('\n')[3].replace(value_precision_to_remove, '')
   recall = test_metrics.group(1).strip().split('\n')[4].replace(value_recall_to_remove, '')
   auc = test_metrics.group(1).strip().split('\n')[5].replace(value_auc_to_remove, '')
+  fmeasure = test_metrics.group(1).strip().split('\n')[6].replace('fmeasure: ', '')
 
-  specific_lines.append(f'Accuracy: {accuracy}')
   specific_lines.append(f'Loss: {loss}')
+  specific_lines.append(f'Accuracy: {accuracy}')
   specific_lines.append(f'Precision: {precision}')
   specific_lines.append(f'recall')
   specific_lines.append(f'Recall: {recall}')
+  specific_lines.append(f'F-Measure: {fmeasure}')
   specific_lines.append(f'AUC: {auc}')
 
   return specific_lines
