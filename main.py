@@ -40,8 +40,6 @@ def retrieve_results(file_path):
     FP = cm.group(3)
     TN = cm.group(4)
 
-    print(TP)
-
     loss = test_metrics.group(1).strip().split('\n')[1].replace('loss: ', '')
     accuracy = test_metrics.group(1).strip().split('\n')[2].replace('categorical_accuracy: ', '')
     precision = test_metrics.group(1).strip().split('\n')[3].replace(value_precision_to_remove, '')
