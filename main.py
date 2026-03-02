@@ -1,68 +1,56 @@
 import os, re, csv, argparse
 
-
 def retrieve_results(file_path):
-    keywords = ["model:", "dataset:", "distribution:", "img_size:", "total_clients", "clients_per_round",
-                "total_rounds", "client_epochs_per_round", "learning_rate"]
 
-    specific_lines = []
+  keywords = ["model:", "dataset:", "distribution:", "img_size:", "total_clients", "clients_per_round", "total_rounds", "client_epochs_per_round", "learning_rate", "algorithm", "optimizer:"]
 
-    specific_lines.append(f'Path: {file_path}')
+  specific_lines = []
 
-    test_metrics_pattern = r"Test Metrics:\n\n(.*?)(?=\n\n Confusion Matrix)"
-    execution_time_pattern = r"Execution Time: (\d{2}:\d{2}:\d{2})"
-    retrieve_cm = r"\[\[\s*(-?\d+)\s+(-?\d+)\s*\]\s*\[\s*(-?\d+)\s+(-?\d+)\s*\]\]"
+  specific_lines.append(f'Path: {file_path}')
 
-    hyper_parameters = list()
+  test_metrics_pattern = r"Test Metrics:\n\n(.*?)(?=\n\n Confusion Matrix)"
+  execution_time_pattern = r"Execution Time: (\d{2}:\d{2}:\d{2})"
 
-    with open(file_path, "r") as file_:
+  hyper_parameters = list()
 
-        for line in file_:
-            if any(keyword in line for keyword in keywords):
-                specific_lines.append(line.strip().replace('_', ' ').title())
+  with open(file_path, "r") as file_:
 
-    with open(file_path, "r") as file_p:
-        content = file_p.read()
+      for line in file_:
+          if any(keyword in line for keyword in keywords):
+              specific_lines.append(line.strip().replace('_', ' ').title())
 
-    test_metrics_pattern = r"Test Metrics:\n\n(.*?)(?=\n\n Confusion Matrix)"
-    execution_time_pattern = r"Execution Time: (\d{2}:\d{2}:\d{2})"
+  with open(file_path, "r") as file_p:
+      content = file_p.read()
 
-    test_metrics = re.search(test_metrics_pattern, content, re.S)
-    execution_time = re.search(execution_time_pattern, content, re.S)
-    cm = re.search(retrieve_cm, content, flags=re.MULTILINE)
+  test_metrics_pattern = r"Test Metrics:\n\n(.*?)(?=\n\n Confusion Matrix)"
+  execution_time_pattern = r"Execution Time: (\d{2}:\d{2}:\d{2})"
 
-    value_precision_to_remove = re.sub(r"(: )\d+\.\d+", r"\1", test_metrics.group(1).strip().split('\n')[3])
-    value_recall_to_remove = re.sub(r"(: )\d+\.\d+", r"\1", test_metrics.group(1).strip().split('\n')[4])
-    value_auc_to_remove = re.sub(r"(: )\d+\.\d+", r"\1", test_metrics.group(1).strip().split('\n')[5])
+  test_metrics = re.search(test_metrics_pattern, content, re.S)
+  execution_time = re.search(execution_time_pattern, content, re.S)
 
-    TP = cm.group(1)
-    FN = cm.group(2)
-    FP = cm.group(3)
-    TN = cm.group(4)
+  value_precision_to_remove = re.sub(r"(: )\d+\.\d+", r"\1", test_metrics.group(1).strip().split('\n')[3])
+  value_recall_to_remove = re.sub(r"(: )\d+\.\d+", r"\1", test_metrics.group(1).strip().split('\n')[4])
+  value_auc_to_remove = re.sub(r"(: )\d+\.\d+", r"\1", test_metrics.group(1).strip().split('\n')[5])
 
-    loss = test_metrics.group(1).strip().split('\n')[1].replace('loss: ', '')
-    accuracy = test_metrics.group(1).strip().split('\n')[2].replace('categorical_accuracy: ', '')
-    precision = test_metrics.group(1).strip().split('\n')[3].replace(value_precision_to_remove, '')
-    recall = test_metrics.group(1).strip().split('\n')[4].replace(value_recall_to_remove, '')
-    auc = test_metrics.group(1).strip().split('\n')[5].replace(value_auc_to_remove, '')
-    fmeasure = test_metrics.group(1).strip().split('\n')[6].replace('fmeasure: ', '')
+  loss = test_metrics.group(1).strip().split('\n')[1].replace('loss: ', '')
+  accuracy = test_metrics.group(1).strip().split('\n')[2].replace('categorical_accuracy: ', '')
+  precision = test_metrics.group(1).strip().split('\n')[3].replace(value_precision_to_remove, '')
+  recall = test_metrics.group(1).strip().split('\n')[4].replace(value_recall_to_remove, '')
+  auc = test_metrics.group(1).strip().split('\n')[5].replace(value_auc_to_remove, '')
+  fmeasure = test_metrics.group(1).strip().split('\n')[6].replace('fmeasure: ', '')
 
-    specific_lines.append(f'Loss: {loss}')
-    specific_lines.append(f'Accuracy: {accuracy}')
-    specific_lines.append(f'Precision: {precision}')
-    specific_lines.append(f'recall')
-    specific_lines.append(f'Recall: {recall}')
-    specific_lines.append(f'F-Measure: {fmeasure}')
-    specific_lines.append(f'AUC: {auc}')
-    specific_lines.append(f'TP: {TP}')
-    specific_lines.append(f'FN: {FN}')
-    specific_lines.append(f'FP: {FP}')
-    specific_lines.append(f'TN: {TN}')
+  specific_lines.append(f'Loss: {loss}')
+  specific_lines.append(f'Accuracy: {accuracy}')
+  specific_lines.append(f'Precision: {precision}')
+  specific_lines.append(f'recall')
+  specific_lines.append(f'Recall: {recall}')
+  specific_lines.append(f'F-Measure: {fmeasure}')
+  specific_lines.append(f'AUC: {auc}')
 
-    return specific_lines
-
+  return specific_lines
 
 def create_csv(metrics, csv_name):
+
     all_metrics_data = []
 
     for metric_set in metrics:
@@ -85,32 +73,32 @@ def create_csv(metrics, csv_name):
 
     print(f"CSV created: {csv_name}")
 
-
 def retrieve_folders_path(main_folder):
-    sub_folder = list()
 
-    for folder in os.listdir(main_folder):
-        folder = os.path.join(main_folder, folder)
+  sub_folder = list()
 
-        if os.path.isdir(folder):
-            sub_folder.append(folder)
+  for folder in os.listdir(main_folder):
+    folder = os.path.join(main_folder, folder)
+    
+    if os.path.isdir(folder):
+        sub_folder.append(folder)
 
-    return sub_folder
-
+  return sub_folder
 
 def retrieve_file_path(sub_folder):
-    complete_list = list()
 
-    for sub_folder_ in sub_folder:
+  complete_list = list()
 
-        for file in os.listdir(sub_folder_):
+  for sub_folder_ in sub_folder:
 
-            if file.endswith('.txt'):
-                file_path = os.path.join(sub_folder_, file)
-                complete_list.append(retrieve_results(file_path))
+    for file in os.listdir(sub_folder_):
 
-    return complete_list
+      if file.endswith('.txt'):
 
+        file_path = os.path.join(sub_folder_, file)
+        complete_list.append(retrieve_results(file_path))
+
+  return complete_list
 
 def parse_args():
     parser = argparse.ArgumentParser(prog="python3.9 main.py",
@@ -123,14 +111,13 @@ def parse_args():
     arguments = parser.parse_args()
     return arguments
 
-
 if __name__ == "__main__":
+  
+  args = parse_args()
+  folders_path = retrieve_folders_path(args.inputfolder)
+  complete_list = retrieve_file_path(folders_path)
 
-    args = parse_args()
-    folders_path = retrieve_folders_path(args.inputfolder)
-    complete_list = retrieve_file_path(folders_path)
-
-    if args.namecsv.endswith('.csv'):
-        create_csv(complete_list, args.namecsv)
-    else:
-        create_csv(complete_list, args.namecsv + '.csv')
+  if args.namecsv.endswith('.csv'):
+      create_csv(complete_list, args.namecsv)
+  else:
+      create_csv(complete_list, args.namecsv + '.csv')
